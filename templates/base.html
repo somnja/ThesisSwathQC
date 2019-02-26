@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>OpenSwathQC</title>
+    <meta charset="utf-8">
+    <link href="templates/style.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+    {% include 'style.css' %}
+    </style>
+
+</head>
+<body>
+<header>
+	<h1>SWATHQC</h1>
+</header>
+
+<div class ="wrapper">
+    
+    {% for section in items  %}
+
+        {{ section }}
+
+    {% endfor %}
+
+
+<div id="myModal" class="modal">
+
+  <!-- The Close Button -->
+  <span class="close">&times;</span>
+
+  <!-- Modal Content (The Image) -->
+  <img class="modal-content" id="img01">
+
+  <!-- Modal Caption (Image Text)
+  <div id="caption"></div> -->
+</div>
+<script>{% include 'script.js' %}</script>
+
+
+</div>
+</body>
+</html>
