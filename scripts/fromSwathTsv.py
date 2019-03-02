@@ -3,7 +3,7 @@
 '''
 import numpy as np
 import matplotlib.pyplot as plt
-from  scripts.toHtml import img_to_html
+from scripts.stuff import img_to_html
 
 
 def mNumOfTransitions(dfdict, b=3):
@@ -84,103 +84,6 @@ def plotMassError(df):
     return fig
 
 
-def mPlotMassError(dfdict, b=3):
-    numdfs = len(dfdict)
-    if numdfs == 1:
-        key = list(dfdict.keys())[0]
-        df = dfdict[key]
-        fig = plotMassError(df)
-
-    else:
-        b = b
-        if numdfs <= b:
-            ncols = numdfs
-            nrows = 1
-        if numdfs > b:
-            ncols = b
-            nrows = int(numdfs / b) + 1
-
-        fig, ax = plt.subplots(nrows, ncols, figsize=(24, 14))
-
-        for a, key in zip(ax, dfdict.keys()):
-            df = dfdict[key]
-            masserrors = list(df.loc[:, 'masserror_ppm'].dropna())
-            # lsit of mean mass errors
-            meanerrors = [meanError(i) for i in masserrors]
-
-            bins = np.arange(min(meanerrors), max(meanerrors), 1)
-            mu = np.mean(meanerrors)
-            median = np.median(meanerrors)
-            sigma = np.std(meanerrors)
-            textstr = '\n'.join((
-                r'$\mu=%.2f$' % (mu,),
-                r'$\mathrm{median}=%.2f$' % (median,),
-                r'$\sigma=%.2f$' % (sigma,)))
-
-            a.hist(meanerrors, bins=bins, alpha=0.8)
-            a.set_title(key, fontsize=14)
-            a.set_ylabel("count", fontsize=14)
-            a.set_xlabel("mean masserror [ppm]", fontsize=14)
-            # these are matplotlib.patch.Patch properties
-            props = dict(boxstyle='round', facecolor='w', alpha=0.5)
-            # place a text box in upper left in axes coords
-            a.text(0.05, 0.95, textstr, transform=a.transAxes, fontsize=12,
-                   verticalalignment='top', bbox=props)
-    return img_to_html(fig)
-
-
-def twoDimHist(df):
-    fig, ax = plt.subplots(figsize=(12,7))
-    df_to_plot = df[['masserror_ppm', 'm/z']].dropna()
-    df_to_plot['meanerror'] = df_to_plot['masserror_ppm'].apply(lambda x: meanError(x))
-    xdata = df_to_plot['m/z']
-    ydata = df_to_plot['meanerror']
-    bins = np.arange(min(xdata), max(xdata), 1)
-
-    plt.hist2d(xdata, ydata, bins=[100, 100], alpha=0.5)
-    plt.ylabel('mean masserror of transition')
-    plt.ylabel('m/z')
-    plt.title('2d histogram of masserrors')
-    plt.colorbar()
-
-    return fig
-
-
-def mTwoDimHist(dfdict, b=3):
-    numdfs = len(dfdict)
-
-    if numdfs == 1:
-        key=list(dfdict.keys())[0]
-        df = dfdict[key]
-        fig = twoDimHist(df)
-
-    else:
-        b = b
-        if numdfs <= b:
-            ncols = numdfs
-            nrows = 1
-        if numdfs > b:
-            ncols = b
-            nrows = int(numdfs / b) + 1
-
-        fig, ax = plt.subplots(nrows, ncols, figsize=(12, 7))
-
-        for a, key in zip(ax, dfdict.keys()):
-
-            df = dfdict[key]
-            df_to_plot = df[['masserror_ppm', 'm/z']].dropna()
-            df_to_plot['meanerror'] = df_to_plot['masserror_ppm'].apply(lambda x: meanError(x))
-            xdata = df_to_plot['m/z']
-            ydata = df_to_plot['meanerror']
-            bins = np.arange(min(xdata), max(xdata), 1)
-
-            a.hist2d(xdata, ydata, bins=[100, 100], alpha=0.5)
-            a.set_ylabel('mean masserror of transition')
-            a.set_xlabel('m/z')
-            a.set_title('2d histogram of masserrors')
-            #a.colorbar()
-
-    return img_to_html(fig)
 
 
 def missedCleavages(dfdict, b=2):

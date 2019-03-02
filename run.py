@@ -4,19 +4,11 @@ import os
 import base64
 from io import BytesIO
 from scripts.handleOSW import OSW2df
-from plots import PeakWidthOverRT, IDoverRT, numOfTransitions
-from scripts.section1 import *
-from scripts.descriptions import *
+from plots import PeakWidthOverRT, IDoverRT, numOfTransitions, massError, libraryCoverage, missedCleavages, \
+    RtcorrWithLibrary, featuresPerPeptide
+from scripts.fileContentInfoTable import *
 
-#plt.rcParams.update({'font.size': 16})
 
-# text filler for now
-loreipsum = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore " \
-            "et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet " \
-            "clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, " \
-            "consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, " \
-            "sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea" \
-            " takimata sanctus est Lorem ipsum dolor sit amet"
 
 
 def img_to_html(figure):
@@ -73,61 +65,13 @@ def renderImgSectionNew(figureAndDescription, header, templateFolder='templates/
  #   return html
 
 
-
-
-def plotsFromSwathTsv(swath_tsv_dict):
-    sectionlist = ['<h2>Plotting from SWATH tsv input files</h2>']
-    return sectionlist
-#
-#     sectionlist.extend([renderImgSection(pltMissedCleavages(swath_tsv_dict),  'mc', 'Missed Cleavages', describeMissedCleavages()),
-#                       renderImgSection(pltIDoverRT(swath_tsv_dict), 'idoverrt', 'ID over RT ', describeIDoverRT('tsv')),
-#                       renderImgSection(pltPWoverRT(swath_tsv_dict),  'pwoverrt', 'PeakWidth over RT ', describePWoverRT('tsv')),
-#                       renderImgSection(pltLibCorr(swath_tsv_dict), 'lib_corr', 'Correlation with Library Intensity', describeLibraryCorr('tsv')),
-#                       renderImgSection(pltMassError(swath_tsv_dict),  'masserror', 'Mean Mass Error', loreipsum),
-#                       renderImgSection(pltPWoverRT(swath_tsv_dict),  'pwoverrt', 'PeakWidth over RT ', describePWoverRT('tsv'))
-#                         ])
-#
-
-
-
-def plotsFromSwathOsw(feature_dict, featureTransition_dict, pp_dict):
-    sectionlist = ['<h2>Plots from SWATH OSW files</h2>']
-    sectionlist.extend([renderImgSectionNew(PeakWidthOverRT.plot(feature_dict), 'PeakWidth over RT'),
-                        renderImgSectionNew(IDoverRT.plot(feature_dict), 'ID over RT'),
-                        renderImgSectionNew(numOfTransitions.plot(featureTransition_dict), 'Number of Transitions')
-                      ])
-    return sectionlist
-
-
-def plotsFromSwath(swath_dict):
-
-    N = len(swath_dict)
-    keys = swath_dict.keys()
-    if list(swath_dict.keys())[0].lower().endswith('tsv'):
-        return plotsFromSwathTsv()
-
-    if list(keys)[0].lower().endswith('osw'):
-        # unpack dict of dicts
-        keyindex = zip(range(N), keys)
-        feature = {}
-        featureMS2 = {}
-        featureTransition = {}
-        for n, key in keyindex:
-            print(n)
-            print(key)
-            dfs = swath_dict[key]
-            feature[key] = dfs['feature']
-            featureMS2[key] = dfs['featureMS2']
-            featureTransition[key] = dfs['featureTransition']
-        return plotsFromSwathOsw(feature, featureTransition)
-
-
 def plotsFromDfdict(dfdict, filedict):
     sectionlist = []
     overRT_dict = {}
     numOfTransitions_dict = {}
-    swath_dict = {}
-    pp_dict = {}
+    masserror_dict = {}
+    libCov_dict = {}
+    missedCleav_dict = {}
 
     keys = dfdict.keys()
 
@@ -135,12 +79,16 @@ def plotsFromDfdict(dfdict, filedict):
         swath_dict = {k: dfdict[k] for k in filedict['swath files']}
         overRT_dict.update(swath_dict)
         numOfTransitions_dict.update(swath_dict)
+        masserror_dict.update(swath_dict)
+        libCov_dict.update(swath_dict)
+        missedCleav_dict.update(swath_dict)
     if filedict['swath files'][0].lower().endswith('osw'):
         # unpack dict of dicts
         keyindex = zip(range(len(filedict['swath files'])), keys)
         swath_feature = {}
         swath_featureMS2 = {}
         swath_featureTransition = {}
+        swath_peptide = {}
         for n, key in keyindex:
             print(n)
             print(key)
@@ -148,12 +96,15 @@ def plotsFromDfdict(dfdict, filedict):
             swath_feature[key] = dfs['feature']
             swath_featureMS2[key] = dfs['featureMS2']
             swath_featureTransition[key] = dfs['featureTransition']
+            swath_peptide[key] = dfs['peptide']
         overRT_dict.update(swath_feature)
         numOfTransitions_dict.update(swath_featureTransition)
+        libCov_dict.update(swath_peptide)
     if filedict['pyprophet'][0].lower().endswith('tsv'):
         pp_dict = {k: dfdict[k] for k in filedict['pyprophet']}
         overRT_dict.update(pp_dict)
         numOfTransitions_dict.update(pp_dict)
+        libCov_dict.update(pp_dict)
     if filedict['pyprophet'][0].lower().endswith('osw'):
         key = filedict['pyprophet'][0]
         dfs = dfdict[key]
@@ -162,9 +113,21 @@ def plotsFromDfdict(dfdict, filedict):
         pp_featureTransition = {key: dfs['featureTransition']}
         overRT_dict.update(pp_feature)
         numOfTransitions_dict.update(pp_featureTransition)
+        libCov_dict.update(pp_peptide)
+    # only plot library coverage if library is available
+    if 'library' not in filedict.keys():
+        lib = {}
+        libCov_dict.update(lib)
+    if 'library' in filedict.keys():
+        lib = {k: dfdict[k] for k in filedict['library']}
+
     sectionlist.extend([renderImgSectionNew(PeakWidthOverRT.plot(overRT_dict), 'PeakWidth over RT'),
                         renderImgSectionNew(IDoverRT.plot(overRT_dict), 'ID over RT'),
-                        renderImgSectionNew(numOfTransitions.plot(numOfTransitions_dict), 'Number of Transitions')
+                        renderImgSectionNew(numOfTransitions.plot(numOfTransitions_dict), 'Number of Transitions'),
+                        renderImgSectionNew(massError.plot(masserror_dict), "Mean Mass Errors"),
+                        renderImgSectionNew(missedCleavages.plot(missedCleav_dict), 'Missed Cleavages'),
+                        renderImgSectionNew(RtcorrWithLibrary.plot(pp_dict), 'RT correlation with library'),
+                        renderImgSectionNew(libraryCoverage.plot(libCov_dict, lib), 'Coverage of Assay Library')
                         ])
     return sectionlist
 
@@ -201,12 +164,13 @@ def main():
             parser.error("file doesn't end with one of {}".format(choices))
         return fname
 
-    # add command line rguments
+    # add command line arguments
     parser = argparse.ArgumentParser(description="Create HTML report for Swatchworkflow, pyprophet and output")
-    parser.add_argument('-p', '--pyprophet_file', help="output from pyprophet eiher as osw or legacy tsv file", dest='pp_file')
-    parser.add_argument('-s', '--swath_files', help="pyprophet tsv file", dest='swath_files', nargs='+') # eiuther featureXML, tsv or osw
+    parser.add_argument('-p', '--pyprophet_file', help="output from pyprophet eiher as osw or legacy tsv file",
+                        dest='pp_file', type=lambda s: valid_file(("tsv", "osw"), s))
+    parser.add_argument('-s', '--swath_files', help="pyprophet tsv file", dest='swath_files', nargs='+', type=lambda s: valid_file(("tsv", "osw"), s)) # eiuther featureXML, tsv or osw
     parser.add_argument('-j', "--qc_json", help="input in json format", dest='input_json', type=lambda s: valid_file(("json"), s))
-    parser.add_argument('-l', '--library', help='library file in tsv or pqp', dest='lib', type=str, required=False)
+    parser.add_argument('-l', '--library', help='library file in tsv or pqp', dest='lib', type=lambda s: valid_file(("tsv", "pqp"), s), required=False)
     parser.add_argument('-o', '--out',  help='outfile name', default='report.html', dest='outfile', type=str,  required=False)
     # parse arguments
     args = parser.parse_args()
@@ -222,14 +186,9 @@ def main():
     infotab = pd.DataFrame({'filename': [],  '#rows': [], '#cols': [], '#target_transitions': [],
                              '#peptides': [], '#proteins': [],
                              '#decoy_transitions': [], '#decoy_peptides': [], '#decoy_proteins': []})
-#
-    # file available ?
-
-    library = args.lib is not None
-    swaths = args.swath_files is not None
 
     dfdict = {}
-    if swaths:
+    if args.swath_files is not None:
         swath_files = []
         #swath_dict = {}
         for i in args.swath_files:
@@ -240,7 +199,6 @@ def main():
                 continue
             if f.endswith("tsv"):
                 dfdict[f] = pd.read_csv(i, sep='\t')
-                plotsFromSwathTsv(dfdict)
             if f.endswith("osw"):
                 # read all necessary tables into dictionary of dataframes:
                 #{'file1.osw': {'feature': 'featuretable1', 'peptide': 'peptidetable1'},
@@ -248,7 +206,7 @@ def main():
                 subdict = {'feature': OSW2df(i, 'FEATURE'),
                            'featureMS2': OSW2df(i, 'FEATURE_MS2'),
                            'featureTransition': OSW2df(i, 'FEATURE_TRANSITION'),
-                           'protein': OSW2df(i, 'PROTEIN')}
+                           'peptide': OSW2df(i, 'PEPTIDE')}
                 dfdict[f] = subdict
         filedict['swath files'] = swath_files
         #swath_dict={k: dfdict[k] for k in filedict['swath files']}
@@ -282,7 +240,7 @@ def main():
         if libfile.endswith('pqp'):
             #subdict = {'peptide': OSW2df(args.lib, 'PEPTIDE')}
             lib = OSW2df(args.lib, 'PEPTIDE')
-            dfdict[ppfile] = lib
+            dfdict[libfile] = lib
 
     print(dfdict.keys())
 
@@ -290,43 +248,15 @@ def main():
 
     #         infotab = fileInfoTableOsw(infotab, {pposwfile, pposw})
 
-    # # plot library coverage, if library is provided
-    # if library:
-    #     filedict['library'] = [str.split(args.lib, separator)[-1]]
-    #     if args.lib.lower().endswith('.pqp'):
-    #         lib = OSW2df(args.lib, 'PEPTIDE')
-    #     if args.lib.lower().endswith('.tsv'):
-    #         lib = pd.read_csv(args.lib, sep='\t')
-    #     # plot library coverage
-    #     if pp_tsv:
-    #         pp = pptsv
-    #     else:
-    #         if pp_osw:
-    #             pposw_peptide = OSW2df(args.input_pp_osw, 'PEPTIDE')
-    #             pp = pposw_peptide
-    #
-    #     if s_tsv and not s_osw:
-    #         temp_vars.append(
-    #             renderImgSection(pltLibCoverage(swath_dict, lib, pp, source='tsv'), 'libcov_img1', 'lib_cov',
-    #                              'Library Coverage', describeLibCoverage('tsv')))
-    #     if s_tsv and s_osw:
-    #         if len(args.input_swath_tsv) >= len(args.input_swath_osw):
-    #             temp_vars.append(
-    #                 renderImgSection(pltLibCoverage(swath_dict, lib, pp, source='tsv'), 'libcov_img1', 'lib_cov','Library Coverage', describeLibCoverage('tsv')))
-    #     if s_osw and not s_tsv:
-    #         swath_peptide_dict = {}
-    #         for i in args.input_swath_osw:
-    #             n = str.split(i, separator)[-1]
-    #             swath_peptide_dict[n] = OSW2df(i, 'PEPTIDE')
-    #         temp_vars.append(renderImgSection(pltLibCoverage(swath_peptide_dict, lib, pp, source='osw'),
-    #                                       'libcov_img1', 'lib_cov', 'Library Coverage', describeLibCoverage('osw')))
+
+
 
 
     #else:
      #   temp_vars.append(
       #      renderMissingSection('no transitionslist in tsv format was provided.<br> Library coverage can not be plotted.'))
 
-    print('filedict: ,' , filedict)
+    print('filedict: ', filedict)
 
 
     # restructure dict

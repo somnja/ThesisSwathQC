@@ -1,9 +1,7 @@
 import math
-import numpy as np
 import matplotlib.pyplot as plt
-from scripts.toHtml import img_to_html
 from matplotlib import gridspec
-from scripts.stuff import checkFilyType
+from scripts.stuff import checkFilyType, img_to_html
 
 
 def numPeaks(entrystr):
@@ -20,13 +18,13 @@ def numOfTransitions(ax, df, key, color):
     if checkFilyType(key) == 'tsv':
         df['peak_count'] = df['aggr_Peak_Area'].apply(lambda x: numPeaks(x))
         to_plot = df[df['decoy'] == 0].groupby('peak_count').count().reset_index().rename(columns={'transition_group_id':'number of available peaks'})
-        to_plot.plot.bar(x='peak_count', y='number of available peaks', color=color, edgecolor='k', rot=90, ax =ax, legend=None)
+        to_plot.plot.bar(x='peak_count', y='number of available peaks', color=color, edgecolor='k', ax=ax, legend=None)
     if checkFilyType(key) == 'osw':
         # from FEATURE_TRANSITION table
         # either APEX_INTENSITY or AREA_INTENSITY
         to_plot = df[df.APEX_INTENSITY != 0.0].groupby('FEATURE_ID').count().groupby('TRANSITION_ID').count().reset_index().rename(
             columns={'TRANSITION_ID': 'peak_count', 'AREA_INTENSITY': 'number of available peaks'})
-        to_plot.plot.bar(x='peak_count',  y='number of available peaks', color=color, edgecolor='k', rot=90, ax =ax, sharey=True, legend=None)
+        to_plot.plot.bar(x='peak_count',  y='number of available peaks', color=color, edgecolor='k', ax=ax, sharey=True, legend=None)
 
     ax.set_title(key)
     ax.set_ylabel("number of peptides")
@@ -51,7 +49,7 @@ def plot(dfdict, cols=3):
     # Todo: arrange plots, share y axis
     gs = gridspec.GridSpec(rows, cols)
     fig = plt.figure(figsize=(20, 7 * rows))
-    last = N -1
+    last = N - 1
     for n, key in keyindex:
 
         if n == last:

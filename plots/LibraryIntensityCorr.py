@@ -1,8 +1,14 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-from scripts.toHtml import img_to_html
+from scripts.stuff import img_to_html
 from matplotlib import gridspec
+
+def describeLibraryCorr(filetype):
+    html = "The correlation of assay library (DDA) intensity with DIA intensity is calculated by OpenSwathWorkflow as one" \
+           " of many sub-scores, that describe describe the peak group. This score is plotted here as boxplot for each provided swath {}" \
+           " file.".format(filetype)
+    return html
 
 
 def libraryCorr(ax, df, colname, key):

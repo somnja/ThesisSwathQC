@@ -1,7 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
 import matplotlib.pyplot as plt
 from plots import barplot
-from scripts.toHtml import img_to_html
+from scripts.stuff import img_to_html
 '''plot missed cleavages, 
 can only be don when one or multiple swath tsv were given
 do one plot for each file
@@ -16,6 +16,7 @@ def MC_plot(df):
     # plot figure
     fig = barplot(df, 'Missed Cleavages', 'count', '# missed cleavages', labelcolor='black')
     return img_to_html(fig, 'MC1')
+
 
 def sample_prep(dfdict):
     """Fill out section.html template"""

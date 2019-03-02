@@ -24,7 +24,10 @@ header{
    clear: both;
 }
 
-
+p.missing{
+    color:Red;
+    font-size: 20px;
+    text-align: center;}
 span {
     font-family: Lucida Sans Typewriter,Lucida Console,monaco,Bitstream Vera Sans Mono,monospace; 
 }

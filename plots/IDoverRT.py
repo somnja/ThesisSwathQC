@@ -1,9 +1,8 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-from scripts.toHtml import img_to_html
 from matplotlib import gridspec
-from scripts.stuff import checkFilyType
+from scripts.stuff import checkFilyType, img_to_html
 
 
 plt.rcParams.update({'font.size': 16})

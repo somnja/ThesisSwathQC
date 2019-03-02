@@ -8,7 +8,7 @@ from io import BytesIO
 from scripts.handleOSW import OSW2df
 from scripts.plotFromAny import mIDoverRT, mPWoverRT, libraryCorr, libCoverage, pltLibCoverage
 from scripts.fromSwathTsv import mPlotMassError, mTwoDimHist, missedCleavages
-from scripts.section1 import input_args_table
+from scripts.fileContentInfoTable import input_args_table
 from scripts.descriptions import describeIDoverRT, describeMissedCleavages, describePWoverRT, describeLibraryCorr
 
 

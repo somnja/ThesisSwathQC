@@ -32,7 +32,7 @@ def topSection(df):
     html_out = template.render(template_vars)
     return html_out
 
-
+# Todo: adjust for dfdict
 def fileInformationTable(info_tab, dfdict, decoyCol='decoy'):
     """
     for tsv file dict like swath_tsv_dict or swath_osw_dict
