@@ -1,0 +1,7 @@
+.idea/
+venv/
+sample_input/
+qc_report.py
+testing_stuff.py
+run_this.py
+test.py
