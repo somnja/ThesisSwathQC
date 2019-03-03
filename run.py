@@ -3,11 +3,10 @@ import argparse
 import os
 import base64
 from io import BytesIO
-from scripts.handleOSW import OSW2df
+from scripts.handleOSW import OSW2df, connOSW
 from plots import PeakWidthOverRT, IDoverRT, numOfTransitions, massError, libraryCoverage, missedCleavages, \
-    RtcorrWithLibrary, featuresPerPeptide
+    RtcorrWithLibrary, pyprophet_scores, featuresPerPeptide
 from scripts.fileContentInfoTable import *
-
 
 
 
@@ -72,6 +71,8 @@ def plotsFromDfdict(dfdict, filedict):
     masserror_dict = {}
     libCov_dict = {}
     missedCleav_dict = {}
+    irt_dict = {}
+
 
     keys = dfdict.keys()
 
@@ -105,15 +106,18 @@ def plotsFromDfdict(dfdict, filedict):
         overRT_dict.update(pp_dict)
         numOfTransitions_dict.update(pp_dict)
         libCov_dict.update(pp_dict)
+        irt_dict.update(pp_dict)
     if filedict['pyprophet'][0].lower().endswith('osw'):
         key = filedict['pyprophet'][0]
         dfs = dfdict[key]
         pp_feature = {key: dfs['feature']}
         pp_peptide = {key: dfs['peptide']}
+        pp_irt = {key: dfs['irt']}
         pp_featureTransition = {key: dfs['featureTransition']}
         overRT_dict.update(pp_feature)
         numOfTransitions_dict.update(pp_featureTransition)
         libCov_dict.update(pp_peptide)
+        irt_dict.update(pp_irt)
     # only plot library coverage if library is available
     if 'library' not in filedict.keys():
         lib = {}
@@ -127,7 +131,8 @@ def plotsFromDfdict(dfdict, filedict):
                         renderImgSectionNew(massError.plot(masserror_dict), "Mean Mass Errors"),
                         renderImgSectionNew(missedCleavages.plot(missedCleav_dict), 'Missed Cleavages'),
                         renderImgSectionNew(RtcorrWithLibrary.plot(pp_dict), 'RT correlation with library'),
-                        renderImgSectionNew(libraryCoverage.plot(libCov_dict, lib), 'Coverage of Assay Library')
+                        renderImgSectionNew(libraryCoverage.plot(libCov_dict, lib), 'Coverage of Assay Library'),
+                        renderImgSectionNew(pyprophet_scores.plot(pp_dict), 'Pyprophet Scores')
                         ])
     return sectionlist
 
@@ -225,7 +230,13 @@ def main():
         if ppfile.endswith('osw'):
             subdict = {'feature': OSW2df(args.pp_file, 'FEATURE'),
                        'peptide': OSW2df(args.pp_file, 'PEPTIDE'),
-                       'featureTransition': OSW2df(args.pp_file, 'FEATURE_TRANSITION')}
+                       'featureTransition': OSW2df(args.pp_file, 'FEATURE_TRANSITION'),
+                       'irt': pd.read_sql_query("""SELECT FEATURE.NORM_RT as iRT, 
+                                                FEATURE.PRECURSOR_ID , 
+                                                PRECURSOR.LIBRARY_RT , 
+                                                PRECURSOR.DECOY as decoy
+                                                FROM PRECURSOR
+                                                INNER JOIN FEATURE ON FEATURE.PRECURSOR_ID = PRECURSOR.ID """, connOSW(args.pp_file))}
             dfdict[ppfile] = subdict
 
         filedict['pyprophet'] = [ppfile]

@@ -67,7 +67,7 @@ def plot(dfdict, cols=3):
                " are empty and will therefore not be counted. " \
                "For tsv files, the number of available peaks can be counted from the column 'aggr_peak_area' is inspected. " \
                "It contains a list of peaks and their respective masserrors. For osw files, number of transitions can be " \
-               "read from the table FEATURE_TRANSITION. it contains 6 transitions for eaach feature, but for some transitions, " \
+               "read from the table FEATURE_TRANSITION. it contains 6 transitions for each feature, but for some transitions, " \
                "no peak was actually detected. So only each non zero AREA_INTENSITY (or alternatively APEX_INTENSITY) will be counted." \
                " The file from pyprophet contains all features and transitions from merged swath files, s o the total number " \
                "will be much higher. But the number of features with only 1 - 3 transitions should go down considerably "

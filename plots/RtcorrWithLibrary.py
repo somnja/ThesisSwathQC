@@ -18,7 +18,8 @@ def iRTcorrelation(ax, df, key, decoy='decoy', group='transition_group_id', x_ir
     # plot from OSW feature
     # mean irt error
     if 'transition_group_id' not in df.columns:
-        df.plot.scatter(x='NORM_RT', y='DELTA_RT', ax=ax)
+        df['delta_iRT'] = df['iRT'] - df['LIBRARY_RT']
+        df[df[decoy]==0].plot.scatter(x='iRT', y='delta_iRT', ax=ax)
     else:
         df[df[decoy] == 0].groupby(group).mean().plot.scatter(x=x_irt, y=y_irt, ax=ax)
     plt.title(key)

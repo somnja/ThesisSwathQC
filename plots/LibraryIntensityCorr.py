@@ -37,7 +37,13 @@ def libraryCorr(ax, df, colname, key):
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12,
             verticalalignment='top', bbox=props)
 
-
+# try:
+#     import matplotlib
+#     matplotlib.use('Agg')
+#     from matplotlib.backends.backend_pdf import PdfPages
+#     import matplotlib.pyplot as plt
+# except ImportError:
+#     plt = None
 
 def pltLibCorr(dfdict, cols=3):
     keys = dfdict.keys()

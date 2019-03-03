@@ -59,5 +59,6 @@ def OSW2df(osw_file, table_name):
     """
     conn = connOSW(osw_file)
     df = pd.read_sql_query("SELECT * FROM " + table_name, conn)
+    conn.close()
     return df
 

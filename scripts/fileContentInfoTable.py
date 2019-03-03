@@ -26,7 +26,7 @@ def topSection(df):
 
     env = Environment(loader=FileSystemLoader('templates/'))  # path to templates
     template = env.get_template("topSection.html")
-    template_vars = {'h': 'Command line arguments',
+    template_vars = {'h': 'Input Files',
                      'file_table': tab,
                      'table_id': 'file_table'}
     html_out = template.render(template_vars)
