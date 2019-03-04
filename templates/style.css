@@ -1,8 +1,9 @@
 body{
     
-    background-color: lightgrey;
+    background-color: lightgray;
     color: #000305;
     font-family: Verdana, sans-serif;
+    text-align: justify;
 	font-size: 12px;
 	line-height: 1.5;
     margin: 0;
@@ -11,6 +12,7 @@ body{
 
 header{
     margin:  1em;
+    font-family: "Arial Black", Gadget, sans-serif;
 	padding: 1em 2em;
 	border: 5px solid white;
 	border-radius: 8px;
@@ -32,6 +34,7 @@ span {
     font-family: Lucida Sans Typewriter,Lucida Console,monaco,Bitstream Vera Sans Mono,monospace; 
 }
 h2 {
+    color: rgb(204, 102, 119);
     padding-left: 1em;
     padding:right: 1em;
     }

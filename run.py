@@ -39,10 +39,6 @@ def renderImgSection(figureAndDescription, header, templateFolder='templates/', 
     html_out = template.render(template_vars)
     return html_out
 
-#def renderMissingSection(missinginput):
- #   html = '<dev class="sec"><h3>Missing input files</h3>The following input files were not specified: ' + missinginput +'. </dev>'
- #   return html
-
 
 def plotsFromDfdict(dfdict, filedict):
     sectionlist = []
@@ -126,25 +122,6 @@ def plotsFromDfdict(dfdict, filedict):
     return sectionlist
 
 
-
-#
-# def plotsFromPpTsv(pptsv, pptsvfile):
-#     sectionlist = []
-#     sectionlist.extend([renderImgSection(pltNumOfTransitions({pptsvfile: pptsv}), 'numtransitions_img', 'num_transitions',
-#                                        'Number of transitions', describeNofTransitions()),
-#                        renderImgSection(pltIRTCorr({pptsvfile:pptsv}), 'irtcorr_pp_img', 'irt_cirr_pp',
-#                         'RT correlation', loreipsum)])
-#
-#     '''temp_vars.extend([renderImgSection(PWoverRT(pptsv), 'PWoverRTimg', 'PWoverRT',
-#                                        'Peak Width over Retention Time', 'some description'),
-#                       renderImgSection(IDoverRT(pptsv), 'IDoverRT_img1', 'IDoverRT',
-#                                        'ID over Retention Time', 'some description'),
-#                       renderImgSection(numOfTransitions(pptsv), 'numofT_img1', 'numOfT',
-#                                        'Count plot for Number of Transitions', 'some description'),
-#      ])'''
-#     return sectionlist
-
-
 def main():
 
     def valid_file(choices, fname):
@@ -173,9 +150,6 @@ def main():
     # add sections to list when the necessary dataframe is available below
     temp_vars = []
 
-    infotab = pd.DataFrame({'filename': [],  '#rows': [], '#cols': [], '#target_transitions': [],
-                             '#peptides': [], '#proteins': [],
-                             '#decoy_transitions': [], '#decoy_peptides': [], '#decoy_proteins': []})
 
     dfdict = {}
     if args.swath_files is not None:
@@ -196,7 +170,9 @@ def main():
                 subdict = {'feature': OSW2df(i, 'FEATURE'),
                            'featureMS2': OSW2df(i, 'FEATURE_MS2'),
                            'featureTransition': OSW2df(i, 'FEATURE_TRANSITION'),
-                           'peptide': OSW2df(i, 'PEPTIDE')}
+                           'transition': OSW2df(i, 'TRANSITION'),  # only for summary table
+                           'peptide': OSW2df(i, 'PEPTIDE'),
+                           'protein': OSW2df(i, 'PROTEIN')}
                 dfdict[f] = subdict
         filedict['swath files'] = swath_files
         #swath_dict={k: dfdict[k] for k in filedict['swath files']}
@@ -214,9 +190,11 @@ def main():
         if ppfile.endswith('osw'):
             subdict = {'feature': OSW2df(args.pp_file, 'FEATURE'),
                        'peptide': OSW2df(args.pp_file, 'PEPTIDE'),
-                       'featureTransition': OSW2df(args.pp_file, 'FEATURE_TRANSITION'),
+                       'protein': OSW2df(args.pp_file, 'PROTEIN'),
                        'irt': irtDfFromSql(args.pp_file),
+                       'featureTransition': OSW2df(args.pp_file, 'FEATURE_TRANSITION'),
                        'peptideScores': peptideScoreFromSql(args.pp_file),
+                       'transition': OSW2df(args.pp_file, 'TRANSITION'), # only for summary table
                        'proteinScores': proteinScoreFromSql(args.pp_file)}
 
             dfdict[ppfile] = subdict
@@ -231,20 +209,17 @@ def main():
             lib = pd.read_csv(args.lib, sep='\t')
             dfdict[libfile] = lib
         if libfile.endswith('pqp'):
-            #subdict = {'peptide': OSW2df(args.lib, 'PEPTIDE')}
+            subdict = {'peptide': OSW2df(args.lib, 'PEPTIDE'),
+                       'protein': OSW2df(args.lib, 'PROTEIN'),
+                       'transition': OSW2df(args.lib, 'TRANSITION')}
             lib = OSW2df(args.lib, 'PEPTIDE')
             dfdict[libfile] = lib
 
 
+    [print('key: ', k ) for k,v in dfdict.items()]
+    [print('key: ', k, 'v: ', v) for k, v in filedict.items()]
 
     temp_vars.extend(plotsFromDfdict(dfdict, filedict))
-
-    #         infotab = fileInfoTableOsw(infotab, {pposwfile, pposw})
-
-    #else:
-     #   temp_vars.append(
-      #      renderMissingSection('no transitionslist in tsv format was provided.<br> Library coverage can not be plotted.'))
-
 
     # restructure dict
     min_length = len(args.swath_files)
@@ -253,7 +228,7 @@ def main():
 
 
     temp_vars.insert(0, topSection(df))
-    temp_vars.insert(1, fileSummaryTable(infotab))
+    temp_vars.insert(1, fileSummaryTable(sumTable(dfdict)))
 
 
     #temp_vars.insert(0, top_section(filedict))
