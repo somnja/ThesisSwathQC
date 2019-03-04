@@ -16,7 +16,7 @@ def describe():
     return html
 
 
-def missedCleavages(ax, df, key):
+def missedCleavagesTsv(ax, df, key):
     temp_df = df[df.decoy == 0][['transition_group_id', 'MC']].drop_duplicates('transition_group_id').groupby(
         'MC').count()
     temp_df = temp_df.rename({'transition_group_id': 'peptides'}, axis=1)
@@ -55,7 +55,7 @@ def plot(dfdict, cols=3):
         for n, key in keyindex:
             ax = fig.add_subplot(gs[n])
             df = dfdict[key]
-            missedCleavages(ax, df, key)
+            missedCleavagesTsv(ax, df, key)
             plt.subplots_adjust(hspace=.2, wspace=.001)
         fig.suptitle('Missed Cleavages in peptides')
 

@@ -42,7 +42,7 @@ def plot(dfdict, cols=2):
     rows = int(math.ceil(N / cols))
 
     gs = gridspec.GridSpec(rows, cols)
-    fig = plt.figure(figsize=(20, 10 * rows))
+    fig = plt.figure(figsize=(20, 7 * rows))
     last = N - 1
     for n, key in keyindex:
         if n == last:

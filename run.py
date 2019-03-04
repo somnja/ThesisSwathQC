@@ -3,9 +3,9 @@ import argparse
 import os
 import base64
 from io import BytesIO
-from scripts.handleOSW import OSW2df, connOSW
+from scripts.handleOSW import *
 from plots import PeakWidthOverRT, IDoverRT, numOfTransitions, massError, libraryCoverage, missedCleavages, \
-    RtcorrWithLibrary, pyprophet_scores, featuresPerPeptide
+    RtcorrWithLibrary, pyprophet_scores, LibraryIntensityCorr, featuresPerPeptide
 from scripts.fileContentInfoTable import *
 
 
@@ -25,27 +25,7 @@ def img_to_html(figure):
     return html
 
 
-def renderImgSection(figurehtml, sectionid, header, description, templateFolder='templates/', templateFile='sectionImg.html'):
-    """
-    render section with plot and plot description into html string with template
-    :param figurehtml: html formatted plot
-    :param sectionid: id of section
-    :param header: section title
-    :param description: html formatted string, description of the image
-    :param templateFolder:
-    :param templateFile:
-    :return: section html as string
-    """
-
-    env = Environment(loader=FileSystemLoader(templateFolder))  #path to templates; eg 'templates2/'
-    template = env.get_template(templateFile) #"sample_prep.html"
-    template_vars = {'id': sectionid,
-                     'h': header,
-                     'description': description,
-                     'figure': figurehtml}
-    html_out = template.render(template_vars)
-    return html_out
-def renderImgSectionNew(figureAndDescription, header, templateFolder='templates/', templateFile='sectionImg.html'):
+def renderImgSection(figureAndDescription, header, templateFolder='templates/', templateFile='sectionImg.html'):
 
     figurehtml = figureAndDescription[0]
     description = figureAndDescription[1]
@@ -66,16 +46,18 @@ def renderImgSectionNew(figureAndDescription, header, templateFolder='templates/
 
 def plotsFromDfdict(dfdict, filedict):
     sectionlist = []
+
+    # prepare specific dicts to be passed to plotting functions
     overRT_dict = {}
     numOfTransitions_dict = {}
     masserror_dict = {}
     libCov_dict = {}
     missedCleav_dict = {}
     irt_dict = {}
-
+    pp_score = {}
+    libIntensity_dict = {}
 
     keys = dfdict.keys()
-
     if filedict['swath files'][0].lower().endswith('tsv'):
         swath_dict = {k: dfdict[k] for k in filedict['swath files']}
         overRT_dict.update(swath_dict)
@@ -83,6 +65,7 @@ def plotsFromDfdict(dfdict, filedict):
         masserror_dict.update(swath_dict)
         libCov_dict.update(swath_dict)
         missedCleav_dict.update(swath_dict)
+        libIntensity_dict.update(swath_dict)
     if filedict['swath files'][0].lower().endswith('osw'):
         # unpack dict of dicts
         keyindex = zip(range(len(filedict['swath files'])), keys)
@@ -91,8 +74,6 @@ def plotsFromDfdict(dfdict, filedict):
         swath_featureTransition = {}
         swath_peptide = {}
         for n, key in keyindex:
-            print(n)
-            print(key)
             dfs = dfdict[key]
             swath_feature[key] = dfs['feature']
             swath_featureMS2[key] = dfs['featureMS2']
@@ -101,23 +82,30 @@ def plotsFromDfdict(dfdict, filedict):
         overRT_dict.update(swath_feature)
         numOfTransitions_dict.update(swath_featureTransition)
         libCov_dict.update(swath_peptide)
+        libIntensity_dict.update(swath_featureMS2)
     if filedict['pyprophet'][0].lower().endswith('tsv'):
         pp_dict = {k: dfdict[k] for k in filedict['pyprophet']}
         overRT_dict.update(pp_dict)
         numOfTransitions_dict.update(pp_dict)
         libCov_dict.update(pp_dict)
         irt_dict.update(pp_dict)
+        pp_score = {pp_dict}
     if filedict['pyprophet'][0].lower().endswith('osw'):
         key = filedict['pyprophet'][0]
         dfs = dfdict[key]
         pp_feature = {key: dfs['feature']}
         pp_peptide = {key: dfs['peptide']}
         pp_irt = {key: dfs['irt']}
+        pp_peptidescore = {(key+'_peptide'): dfs['peptideScores']}
+        pp_proteinscore = {(key+'_protein'): dfs['proteinScores']}
         pp_featureTransition = {key: dfs['featureTransition']}
         overRT_dict.update(pp_feature)
         numOfTransitions_dict.update(pp_featureTransition)
         libCov_dict.update(pp_peptide)
         irt_dict.update(pp_irt)
+        pp_score.update(pp_peptidescore)
+        pp_score.update(pp_proteinscore)
+
     # only plot library coverage if library is available
     if 'library' not in filedict.keys():
         lib = {}
@@ -125,22 +113,19 @@ def plotsFromDfdict(dfdict, filedict):
     if 'library' in filedict.keys():
         lib = {k: dfdict[k] for k in filedict['library']}
 
-    sectionlist.extend([renderImgSectionNew(PeakWidthOverRT.plot(overRT_dict), 'PeakWidth over RT'),
-                        renderImgSectionNew(IDoverRT.plot(overRT_dict), 'ID over RT'),
-                        renderImgSectionNew(numOfTransitions.plot(numOfTransitions_dict), 'Number of Transitions'),
-                        renderImgSectionNew(massError.plot(masserror_dict), "Mean Mass Errors"),
-                        renderImgSectionNew(missedCleavages.plot(missedCleav_dict), 'Missed Cleavages'),
-                        renderImgSectionNew(RtcorrWithLibrary.plot(pp_dict), 'RT correlation with library'),
-                        renderImgSectionNew(libraryCoverage.plot(libCov_dict, lib), 'Coverage of Assay Library'),
-                        renderImgSectionNew(pyprophet_scores.plot(pp_dict), 'Pyprophet Scores')
+    sectionlist.extend([renderImgSection(PeakWidthOverRT.plot(overRT_dict), 'PeakWidth over RT'),
+                        renderImgSection(IDoverRT.plot(overRT_dict), 'ID over RT'),
+                        renderImgSection(numOfTransitions.plot(numOfTransitions_dict), 'Number of Transitions'),
+                        renderImgSection(massError.plot(masserror_dict), "Mean Mass Errors"),
+                        renderImgSection(missedCleavages.plot(missedCleav_dict), 'Missed Cleavages'),
+                        renderImgSection(RtcorrWithLibrary.plot(irt_dict), 'RT correlation with library'),
+                        renderImgSection(libraryCoverage.plot(libCov_dict, lib), 'Coverage of Assay Library'),
+                        renderImgSection(LibraryIntensityCorr.plot(libIntensity_dict), 'Library intensity correlation'),
+                        renderImgSection(pyprophet_scores.plot(pp_score), 'Pyprophet Scores')
                         ])
     return sectionlist
 
 
-def plotsFromPpOsw():
-    sectionlist = []
-
-    return sectionlist
 
 #
 # def plotsFromPpTsv(pptsv, pptsvfile):
@@ -222,7 +207,6 @@ def main():
 
     if args.pp_file is not None:
         # Todo maybe enable multiple pp files, osw and tsv?
-        pp_dict = {}
         ppfile = str.split(args.pp_file, separator)[-1]
         if ppfile.endswith('tsv'):
             pp = pd.read_csv(args.pp_file, sep='\t')
@@ -231,12 +215,10 @@ def main():
             subdict = {'feature': OSW2df(args.pp_file, 'FEATURE'),
                        'peptide': OSW2df(args.pp_file, 'PEPTIDE'),
                        'featureTransition': OSW2df(args.pp_file, 'FEATURE_TRANSITION'),
-                       'irt': pd.read_sql_query("""SELECT FEATURE.NORM_RT as iRT, 
-                                                FEATURE.PRECURSOR_ID , 
-                                                PRECURSOR.LIBRARY_RT , 
-                                                PRECURSOR.DECOY as decoy
-                                                FROM PRECURSOR
-                                                INNER JOIN FEATURE ON FEATURE.PRECURSOR_ID = PRECURSOR.ID """, connOSW(args.pp_file))}
+                       'irt': irtDfFromSql(args.pp_file),
+                       'peptideScores': peptideScoreFromSql(args.pp_file),
+                       'proteinScores': proteinScoreFromSql(args.pp_file)}
+
             dfdict[ppfile] = subdict
 
         filedict['pyprophet'] = [ppfile]
@@ -253,28 +235,19 @@ def main():
             lib = OSW2df(args.lib, 'PEPTIDE')
             dfdict[libfile] = lib
 
-    print(dfdict.keys())
+
 
     temp_vars.extend(plotsFromDfdict(dfdict, filedict))
 
     #         infotab = fileInfoTableOsw(infotab, {pposwfile, pposw})
 
-
-
-
-
     #else:
      #   temp_vars.append(
       #      renderMissingSection('no transitionslist in tsv format was provided.<br> Library coverage can not be plotted.'))
 
-    print('filedict: ', filedict)
-
 
     # restructure dict
     min_length = len(args.swath_files)
-    #min_length = max(len(elem) for elem in [args.input_swath_tsv, args.input_swath_osw])
-
-
 
     df = pd.DataFrame({k: pd.Series(v[:min_length]) for k, v in filedict.items()}).fillna('-')
 
@@ -299,3 +272,12 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# try:
+#     import matplotlib
+#     matplotlib.use('Agg')
+#     from matplotlib.backends.backend_pdf import PdfPages
+#     import matplotlib.pyplot as plt
+# except ImportError:
+#     plt = None

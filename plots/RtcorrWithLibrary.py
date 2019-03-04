@@ -1,6 +1,6 @@
 import math
 import matplotlib.pyplot as plt
-from scripts.stuff import img_to_html
+from scripts.stuff import img_to_html, checkFilyType
 from matplotlib import gridspec
 
 plt.rcParams.update({'font.size': 16})
@@ -8,8 +8,8 @@ plt.rcParams.update({'font.size': 16})
 # Todo: only ploting from pp tsv export makes sense?
 
 def describe():
-    html = "Scatter plot of RT against RT difference, plotted from swath output files" \
-           "<br>Only pyprophet tsv export contains the irt normalized retention time, "
+    html = "Scatter plot of iRT against iRT difference, plotted from pyprophet output files" \
+           "<br>"
     return html
 
 
@@ -17,17 +17,19 @@ def iRTcorrelation(ax, df, key, decoy='decoy', group='transition_group_id', x_ir
     # plot from tsv
     # plot from OSW feature
     # mean irt error
-    if 'transition_group_id' not in df.columns:
+    if checkFilyType(key)=='osw':
         df['delta_iRT'] = df['iRT'] - df['LIBRARY_RT']
-        df[df[decoy]==0].plot.scatter(x='iRT', y='delta_iRT', ax=ax)
+        df[df[decoy]==0].groupby('precursor').mean().plot.scatter(x='iRT', y='delta_iRT', ax=ax)
+
     else:
         df[df[decoy] == 0].groupby(group).mean().plot.scatter(x=x_irt, y=y_irt, ax=ax)
     plt.title(key)
+    plt.xlabel('normalized RT [min]')
 
 
 def plot(dfdict):
     if not any(dfdict):
-        return "<p class='missing'>No pp tsv file provided</p>"
+        return "<p class='missing'>No pp tsv or osw file provided</p>"
     else:
         cols=1
         keys = dfdict.keys()

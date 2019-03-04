@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 from scripts.stuff import img_to_html
 from matplotlib import gridspec
 
-def describeLibraryCorr(filetype):
+def describe():
     html = "The correlation of assay library (DDA) intensity with DIA intensity is calculated by OpenSwathWorkflow as one" \
-           " of many sub-scores, that describe describe the peak group. This score is plotted here as boxplot for each provided swath {}" \
-           " file.".format(filetype)
+           " of many sub-scores, that describe describe the peak group. This score is plotted here as boxplot for each provided swath output" \
+           " file."
     return html
 
 
@@ -37,21 +37,15 @@ def libraryCorr(ax, df, colname, key):
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12,
             verticalalignment='top', bbox=props)
 
-# try:
-#     import matplotlib
-#     matplotlib.use('Agg')
-#     from matplotlib.backends.backend_pdf import PdfPages
-#     import matplotlib.pyplot as plt
-# except ImportError:
-#     plt = None
 
-def pltLibCorr(dfdict, cols=3):
+
+def plot(dfdict, cols=3):
+    # osw: FEATURE_MS2
     keys = dfdict.keys()
     if list(keys)[0].endswith('.osw'):
         colname = 'VAR_LIBRARY_CORR'
     if list(keys)[0].endswith('.tsv'):
         colname = 'var_library_corr'
-
     N = len(dfdict)
     if N <= cols:
         cols = N
@@ -69,4 +63,4 @@ def pltLibCorr(dfdict, cols=3):
 
     fig.subplots_adjust(hspace=.2, wspace=.001)
     fig.suptitle('Library Correlation')
-    return img_to_html(fig)
+    return (img_to_html(fig), describe(), 'libCorr')
