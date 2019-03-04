@@ -2,7 +2,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
-from scripts.stuff import checkFilyType, img_to_html
+from scripts.stuff import checkFilyType, img_to_html, colorPP
 
 
 plt.rcParams.update({'font.size': 16})
@@ -24,7 +24,7 @@ def IDoverRT(ax, df, title, RTcolumn, color, min):
     # library patch
     ax.hist(df.loc[:, RTcolumn], bins=RTrange, color=color, edgecolor="k")
     plt.title(title)
-    plt.xlabel('RT[sec]')
+    plt.xlabel('RT[min]')
     plt.ylabel('# of IDs')
 
     plt.xticks(RTrange)
@@ -42,7 +42,7 @@ def IDoverRT(ax, df, title, RTcolumn, color, min):
     #xtickNames = plt.setp(ax, xticklabels=RTrange)
     #plt.setp(xtickNames, fontsize=14)
 
-def plot(dfdict, min=5, cols=2):
+def plot(dfdict, filedict, min=5, cols=2):
     """ plot multiple subfigures
         plot the number of Identifications for specified minute interval min , default: 5 min
         datasource: this can be plotted from any file: pyprophet or swath, osw or tsv,
@@ -59,12 +59,9 @@ def plot(dfdict, min=5, cols=2):
     # Todo: shared y axis between all subplots
 
     # plot each dataframe in dict
-    last = N -1
+
     for n, key in keyindex:
-        if n == last:
-            color = '#3A78A4'
-        else:
-            color = 'coral'
+        color = colorPP(key, filedict)
         filetype = checkFilyType(key)
         if filetype == 'osw':
             RTcolumn = 'EXP_RT'

@@ -41,6 +41,8 @@ def renderImgSection(figureAndDescription, header, templateFolder='templates/', 
 
 
 def plotsFromDfdict(dfdict, filedict):
+
+    #Todo: give pp different color in plots, (use filedict to compare key)
     sectionlist = []
 
     # prepare specific dicts to be passed to plotting functions
@@ -86,12 +88,14 @@ def plotsFromDfdict(dfdict, filedict):
         libCov_dict.update(pp_dict)
         irt_dict.update(pp_dict)
         pp_score = {pp_dict}
+        libIntensity_dict.update(pp_dict)
     if filedict['pyprophet'][0].lower().endswith('osw'):
         key = filedict['pyprophet'][0]
         dfs = dfdict[key]
         pp_feature = {key: dfs['feature']}
         pp_peptide = {key: dfs['peptide']}
         pp_irt = {key: dfs['irt']}
+        pp_featureMS2 = {key: dfs['featureMS2']}
         pp_peptidescore = {(key+'_peptide'): dfs['peptideScores']}
         pp_proteinscore = {(key+'_protein'): dfs['proteinScores']}
         pp_featureTransition = {key: dfs['featureTransition']}
@@ -99,6 +103,7 @@ def plotsFromDfdict(dfdict, filedict):
         numOfTransitions_dict.update(pp_featureTransition)
         libCov_dict.update(pp_peptide)
         irt_dict.update(pp_irt)
+        libIntensity_dict.update(pp_featureMS2)
         pp_score.update(pp_peptidescore)
         pp_score.update(pp_proteinscore)
 
@@ -109,9 +114,9 @@ def plotsFromDfdict(dfdict, filedict):
     if 'library' in filedict.keys():
         lib = {k: dfdict[k] for k in filedict['library']}
 
-    sectionlist.extend([renderImgSection(PeakWidthOverRT.plot(overRT_dict), 'PeakWidth over RT'),
-                        renderImgSection(IDoverRT.plot(overRT_dict), 'ID over RT'),
-                        renderImgSection(numOfTransitions.plot(numOfTransitions_dict), 'Number of Transitions'),
+    sectionlist.extend([renderImgSection(PeakWidthOverRT.plot(overRT_dict, filedict), 'PeakWidth over RT'),
+                        renderImgSection(IDoverRT.plot(overRT_dict, filedict), 'ID over RT'),
+                        renderImgSection(numOfTransitions.plot(numOfTransitions_dict, filedict), 'Number of Transitions'),
                         renderImgSection(massError.plot(masserror_dict), "Mean Mass Errors"),
                         renderImgSection(missedCleavages.plot(missedCleav_dict), 'Missed Cleavages'),
                         renderImgSection(RtcorrWithLibrary.plot(irt_dict), 'RT correlation with library'),
@@ -190,6 +195,7 @@ def main():
         if ppfile.endswith('osw'):
             subdict = {'feature': OSW2df(args.pp_file, 'FEATURE'),
                        'peptide': OSW2df(args.pp_file, 'PEPTIDE'),
+                       'featureMS2': OSW2df(args.pp_file, 'FEATURE_MS2'),
                        'protein': OSW2df(args.pp_file, 'PROTEIN'),
                        'irt': irtDfFromSql(args.pp_file),
                        'featureTransition': OSW2df(args.pp_file, 'FEATURE_TRANSITION'),

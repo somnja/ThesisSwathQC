@@ -1,5 +1,4 @@
 body{
-    
     background-color: lightgray;
     color: #000305;
     font-family: Verdana, sans-serif;
@@ -11,12 +10,20 @@ body{
 }
 
 header{
-    margin:  1em;
+    margin:  1em 2em;
     font-family: "Arial Black", Gadget, sans-serif;
+    color: #063a5e;
 	padding: 1em 2em;
 	border: 5px solid white;
-	border-radius: 8px;
 }
+
+h2 {
+    color: #063a5e;
+    border-bottom: 5px solid #063a5e;
+    padding-left: 1em;
+    padding-right: 1em;
+    margin-bottom: 1.5em;
+    }
 
 .clearfix:after {
    content: " "; 
@@ -33,24 +40,20 @@ p.missing{
 span {
     font-family: Lucida Sans Typewriter,Lucida Console,monaco,Bitstream Vera Sans Mono,monospace; 
 }
-h2 {
-    color: rgb(204, 102, 119);
-    padding-left: 1em;
-    padding:right: 1em;
-    }
+
 .wrapper {
-	margin: 1em;
-	border: 5px solid white;
-	border-radius: 8px;
+    background-color: lightgray;
+	margin: 1em 2em;
+    border: 5px solid white;
     float:left;
 }
 
 .sec {
-    border-bottom: 5px solid white;
+
     padding: 1em;
     overflow: hidden;
     float:left;
-    min-width: 98%;
+    min-width: 100%;
 }
 
 .sec .img_description { 
@@ -58,11 +61,7 @@ h2 {
     width:30%;  
     margin-right: 2em;
     overflow: hidden}
-.img_container {
-    width:60%;
-    margin-right: 15px;
-    float: left;
-}
+
 table {
    border-collapse: collapse;
    width: 100%;
@@ -76,9 +75,13 @@ th, td {
 
 
 .img_container {
-    width: 60%;
-    right: 1em;
+    float: left;
+    width: 65%;
+    margin-left: 2em;
+    margin-top: 40px;
     top: 1em;
+    background-color:white; 
+    overflow: hidden;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 

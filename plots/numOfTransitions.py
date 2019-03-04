@@ -1,7 +1,7 @@
 import math
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
-from scripts.stuff import checkFilyType, img_to_html
+from scripts.stuff import checkFilyType, img_to_html, colorPP
 
 
 def numPeaks(entrystr):
@@ -39,7 +39,7 @@ def numOfTransitions(ax, df, key, color):
 
 
 
-def plot(dfdict, cols=3):
+def plot(dfdict, filedict, cols=3):
     keys = dfdict.keys()
     N = len(dfdict)
     if N < cols:
@@ -52,10 +52,7 @@ def plot(dfdict, cols=3):
     last = N - 1
     for n, key in keyindex:
 
-        if n == last:
-            color = '#3A78A4'
-        else:
-            color= 'coral'
+        color= colorPP(key, filedict)
         ax = fig.add_subplot(gs[n])
         df = dfdict[key]
         # plot on ax

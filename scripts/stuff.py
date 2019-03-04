@@ -11,7 +11,6 @@ def checkFilyType(key):
         return 'featureXML'
 
 
-
 def img_to_html(figure):
     """
       @brief
@@ -25,3 +24,11 @@ def img_to_html(figure):
     data_uri = base64.b64encode(buffer.read()).decode('ascii')
     html = '<img class="myImages" src="data:image/png;base64,{0}" width=100%>'.format(data_uri)
     return html
+
+
+def colorPP(key, filedict):
+    if key in filedict['pyprophet']:
+        color = '#3a78a4'
+    else:
+        color = 'coral'
+    return color

@@ -6,12 +6,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
-from scripts.stuff import checkFilyType, img_to_html
+from scripts.stuff import checkFilyType, img_to_html, colorPP
 
 plt.rcParams.update({'font.size': 16})
 
 
-def plot(dfdict, min=5, cols=1):
+def plot(dfdict, filedict, min=5, cols=1):
     """
     boxplots of Peak Width for given dict of dataframesw, arrange plots deppending on size of dataframe
     determine osw or tsv source from dataframe keys
@@ -34,6 +34,9 @@ def plot(dfdict, min=5, cols=1):
         # set ax
         ax = fig.add_subplot(gs[n])
         df = dfdict[key]
+
+        #Todo: different color on pp boxplot?
+        color=colorPP(key, filedict)
 
         if filetype == 'tsv':
             RTcolumn = 'RT'
