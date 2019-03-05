@@ -1,20 +1,20 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
-from scripts.stuff import img_to_html
+from scripts.stuff import img_to_html, checkFilyType
 from matplotlib import gridspec
 
 def describe():
     html = "The correlation of assay library (DDA) intensity with DIA intensity is calculated by OpenSwathWorkflow as one" \
            " of many sub-scores, that describe describe the peak group. This score is plotted here as boxplot for each provided swath output" \
-           " file."
+           " file.<br>" \
+           ""
     return html
 
 
 def libraryCorr(ax, df, colname, key):
     """ boxplot of column 'var_library_corr' or 'VAR_LIBRARY_CORR (in all except pp exprot tsv)"""
-
-    lib_corr = df.loc[:, colname]
+    lib_corr = df[colname]
     # get mean, median and std error to place in textbox
     mu = np.mean(lib_corr)
     median = np.median(lib_corr)
@@ -42,10 +42,8 @@ def libraryCorr(ax, df, colname, key):
 def plot(dfdict, cols=3):
     # osw: FEATURE_MS2
     keys = dfdict.keys()
-    if list(keys)[0].endswith('.osw'):
-        colname = 'VAR_LIBRARY_CORR'
-    if list(keys)[0].endswith('.tsv'):
-        colname = 'var_library_corr'
+
+
     N = len(dfdict)
     if N <= cols:
         cols = N
@@ -56,6 +54,10 @@ def plot(dfdict, cols=3):
     fig = plt.figure(figsize=(20, 7 * rows))
 
     for n, key in keyindex:
+        if key.lower().endswith('tsv'):
+            colname = 'var_library_corr'
+        else:
+            colname = 'VAR_LIBRARY_CORR'
         # set ax
         ax = fig.add_subplot(gs[n])
         df = dfdict[key]

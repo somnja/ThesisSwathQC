@@ -87,8 +87,7 @@ def plotsFromDfdict(dfdict, filedict):
         numOfTransitions_dict.update(pp_dict)
         libCov_dict.update(pp_dict)
         irt_dict.update(pp_dict)
-        pp_score = {pp_dict}
-        libIntensity_dict.update(pp_dict)
+        pp_score.update(pp_dict)
     if filedict['pyprophet'][0].lower().endswith('osw'):
         key = filedict['pyprophet'][0]
         dfs = dfdict[key]
@@ -113,7 +112,7 @@ def plotsFromDfdict(dfdict, filedict):
         libCov_dict.update(lib)
     if 'library' in filedict.keys():
         lib = {k: dfdict[k] for k in filedict['library']}
-
+    print(libIntensity_dict.keys())
     sectionlist.extend([renderImgSection(PeakWidthOverRT.plot(overRT_dict, filedict), 'PeakWidth over RT'),
                         renderImgSection(IDoverRT.plot(overRT_dict, filedict), 'ID over RT'),
                         renderImgSection(numOfTransitions.plot(numOfTransitions_dict, filedict), 'Number of Transitions'),

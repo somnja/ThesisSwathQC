@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from scripts.stuff import checkFilyType, img_to_html, colorPP
+import mpld3
 
 
 plt.rcParams.update({'font.size': 16})

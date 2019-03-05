@@ -43,7 +43,6 @@ def plot(dfdict):
     fig = plt.figure(figsize=(20, 7 * rows))
     for n, key in keyindex:
         df = dfdict[key]
-        contexts = set(df.CONTEXT)
         if 'osw' in key:
             contexts = set(df.CONTEXT)
             subcols=3
@@ -51,6 +50,7 @@ def plot(dfdict):
             dScorePlotOsw(df, key, gs_inner, fig)
         if 'tsv' in key:
             subcols=2
+            gs_inner = gridspec.GridSpecFromSubplotSpec(1, subcols, subplot_spec=gs_outer[n], wspace=0.2, hspace=0.2)
             dScorePlotTsv(fig, df, key, gs_inner)
 
     plt.suptitle('d-score plot')

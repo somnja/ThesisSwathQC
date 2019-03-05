@@ -28,9 +28,9 @@ def missedCleavagesTsv(ax, df, key):
 
     temp_df.plot(kind='bar', ax=ax, color="coral")
     ax.set_alpha(0.8)
-    ax.set_title('Missed Cleavages ' + key)  # , fontsize=14)
+    ax.set_title(key)  # , fontsize=14)
     ax.set_xlabel('# missed cleavages')
-    ax.set_ylabel('count')
+    ax.set_ylabel('count (transitions groups)')
     ax.legend('')
     ax.xaxis.set_tick_params(rotation=0)
     #ax.text(0.6, 0.9, textstr, transform=ax.transAxes,

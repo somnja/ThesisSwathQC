@@ -2,6 +2,7 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from scripts.stuff import checkFilyType, img_to_html, colorPP
+import mpld3
 
 
 def numPeaks(entrystr):
@@ -27,7 +28,7 @@ def numOfTransitions(ax, df, key, color):
         to_plot.plot.bar(x='peak_count',  y='number of available peaks', color=color, edgecolor='k', ax=ax, sharey=True, legend=None)
 
     ax.set_title(key)
-    ax.set_ylabel("number of peptides")
+    ax.set_ylabel("number of features")
     ax.set_xlabel("number of transitions")
     # labels
     totals = []
