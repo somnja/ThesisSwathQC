@@ -66,12 +66,19 @@ def libCoverage(ax, library, file, key):
     ax.set_title(key)
 
 def plot(dfdict, lib, cols=3):
-    """create one figure with subplots for all input dataframes"""
+    """
+
+    :param dfdict:
+    :param lib: as dataframe
+    :param cols:
+    :return:
+    """
     # N: total number of subplots, (length of dict + pptsv)
     # add pptsv to dict, in order to oterate over them all
     if not any(lib):
-        return ('<p class="missing">no library file was provided</p>', describe(), 'masserror')
+        return ('<p class="missing">no library file was provided</p>', describe(), 'libCov')
     else:
+        lib
         if 'PeptideSequence' not in lib.columns:
             lib = lib.rename(columns={'UNMODIFIED_SEQUENCE': 'PeptideSequence', 'DECOY': 'decoy'})
         N = len(dfdict)

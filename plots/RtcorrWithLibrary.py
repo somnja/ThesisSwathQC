@@ -13,18 +13,27 @@ def describe():
     return html
 
 
-def iRTcorrelation(ax, df, key, decoy='decoy', group='transition_group_id', x_irt='iRT', y_irt='delta_iRT'):
-    # plot from tsv
-    # plot from OSW feature
-    # mean irt error
-    if checkFilyType(key)=='osw':
+def iRTcorrelation(ax, df, key, decoy='decoy', group='transition_group_id'):
+    if 'iRT' in df.columns:
+        x_rt = 'iRT'
+        y_rt = 'delta_iRT'
+        xlab = 'normalized RT [min]'
+        ylab= 'delta RT [min]'
+    if 'RT' in df.columns and not 'iRT' in df.columns:
+        x_rt = 'RT'
+        y_rt ='delta_rt'
+        xlab = 'RT [min]'
+        ylab = 'delta RT [sec]' #Todo: convert seconds to minutes
+    if checkFilyType(key) == 'osw':
         df['delta_iRT'] = df['iRT'] - df['LIBRARY_RT']
-        df[df[decoy]==0].groupby('precursor').mean().plot.scatter(x='iRT', y='delta_iRT', ax=ax)
-
+        df[df[decoy] == 0].groupby('precursor').mean().plot.scatter(x=x_rt, y=y_rt, ax=ax)
+        plt.xlabel('normalized RT [min]')
     else:
-        df[df[decoy] == 0].groupby(group).mean().plot.scatter(x=x_irt, y=y_irt, ax=ax)
+        df[df[decoy] == 0].groupby(group).mean().plot.scatter(x=x_rt, y=y_rt, ax=ax)
     plt.title(key)
-    plt.xlabel('normalized RT [min]')
+    plt.xlabel(xlab)
+    plt.ylabel(ylab)
+
 
 
 def plot(dfdict):

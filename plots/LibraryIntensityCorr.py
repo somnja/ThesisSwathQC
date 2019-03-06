@@ -41,6 +41,8 @@ def libraryCorr(ax, df, colname, key):
 
 def plot(dfdict, cols=3):
     # osw: FEATURE_MS2
+    if not any(dfdict):
+        return ('<p class="missing">missing files </p>', describe(), 'libCorr')
     keys = dfdict.keys()
 
 
